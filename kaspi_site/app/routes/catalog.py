@@ -64,7 +64,7 @@ def build_category_tree(categories, products, hide_empty=False):
         elif node["parent_id"] in nodes:
             nodes[node["parent_id"]]["subcategories"].append(node)
 
-    if hide_empty:  # при поиске показываем только то, где что-то нашлось
+    if hide_empty: 
         for root in roots:
             root["subcategories"] = [s for s in root["subcategories"] if s["products"]]
         roots = [r for r in roots if r["products"] or r["subcategories"]]

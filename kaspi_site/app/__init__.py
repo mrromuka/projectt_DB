@@ -49,7 +49,7 @@ def create_app():
                     (user["id"],),
                 )
                 cart_count = cur.fetchone()[0]
-        # Только что добавили товар в корзину? Покажем (один раз) что к нему подходит.
+        
         just_added = session.pop("just_added", None) if user else None
         added_recs = []
         if just_added:

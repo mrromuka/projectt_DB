@@ -21,7 +21,7 @@ def checkout():
         if cart_id is None:
             return redirect(url_for("catalog.home"))
 
-        # FOR UPDATE: два покупателя не смогут купить последний товар одновременно
+        
         cur.execute(
             """
             SELECT ci.product_id, ci.quantity, p.price, p.stock_qty, p.is_active, p.title
@@ -92,7 +92,7 @@ def history():
             (current_user_id(),),
         )
         rows = cur.fetchall()
-        # после покупки рекомендации остаются: подбираем по недавним заказам
+
         recommendations = get_user_recommendations(cur, current_user_id())
 
     orders = {}

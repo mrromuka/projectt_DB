@@ -1,5 +1,3 @@
--- Роли (buyer / seller / admin), пароли, привязка продавцов к аккаунтам,
--- скрытие товаров. Можно запускать повторно: всё идемпотентно.
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'buyer';

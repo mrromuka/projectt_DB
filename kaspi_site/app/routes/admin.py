@@ -16,8 +16,6 @@ def back(default_endpoint):
     return redirect(safe_next_url(request.form.get("next")) or url_for(default_endpoint))
 
 
-# ---------- обзор ----------
-
 @bp.route("/")
 @admin_required
 def dashboard():
@@ -58,7 +56,7 @@ def dashboard():
     )
 
 
-# ---------- заказы ----------
+
 
 @bp.route("/orders")
 @admin_required
@@ -150,7 +148,7 @@ def order_status(order_id):
     return back("admin.orders")
 
 
-# ---------- товары ----------
+
 
 @bp.route("/products")
 @admin_required
@@ -208,7 +206,7 @@ def product_toggle(product_id):
     return back("admin.products")
 
 
-# ---------- пользователи ----------
+
 
 @bp.route("/users")
 @admin_required
@@ -295,7 +293,7 @@ def user_toggle(user_id):
         row = cur.fetchone()
         if row is None:
             abort(404)
-        if not row[1]:  # заблокировали — товары продавца тоже убираем из каталога
+        if not row[1]:  
             cur.execute(
                 """
                 UPDATE products SET is_active = FALSE
@@ -308,7 +306,6 @@ def user_toggle(user_id):
     return back("admin.users")
 
 
-# ---------- категории ----------
 
 @bp.route("/categories")
 @admin_required
@@ -400,7 +397,7 @@ def category_delete(category_id):
     return redirect(url_for("admin.categories"))
 
 
-# ---------- отзывы ----------
+
 
 @bp.route("/reviews")
 @admin_required

@@ -11,7 +11,6 @@ ROLES = [
 STATUS_NEW = "new"
 STATUS_CANCELLED = "cancelled"
 
-# (значение в БД, подпись на сайте)
 ORDER_STATUSES = [
     ("new", "Новый"),
     ("processing", "В обработке"),

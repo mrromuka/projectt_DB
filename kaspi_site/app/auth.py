@@ -9,7 +9,7 @@ from .constants import ROLE_ADMIN, ROLE_SELLER
 from .db import get_db
 
 
-# ---------- текущий пользователь ----------
+
 
 def current_user():
     """Пользователь из сессии (dict) или None. Читается из БД один раз за запрос,
@@ -60,8 +60,7 @@ def current_user_id():
 def log_in(user_id):
     session.clear()
     session["user_id"] = user_id
-    g.pop("current_user", None)  # сбрасываем кэш, чтобы подхватить нового пользователя
-
+    g.pop("current_user", None)  
 
 def log_out():
     session.clear()
@@ -78,7 +77,7 @@ def safe_next_url(target):
     return target
 
 
-# ---------- декораторы доступа ----------
+
 
 def login_required(view):
     @wraps(view)
@@ -110,7 +109,7 @@ admin_required = role_required(lambda u: u["is_admin"])
 seller_required = role_required(lambda u: u["is_seller"])
 
 
-# ---------- CSRF ----------
+
 
 def csrf_token():
     token = session.get("_csrf")
