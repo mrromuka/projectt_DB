@@ -1,0 +1,56 @@
+{% extends "seller/_layout.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Обзор - Кабинет продавца{% endblock %}
+
+{% block panel %}
+<div class="panel-title">
+    <div><h1>Обзор магазина</h1><p>Сводка по вашим товарам и продажам</p></div>
+    <a href="{{ url_for('seller.product_new') }}" class="btn">+ Добавить товар</a>
+</div>
+
+<div class="stats">
+    <div class="stat"><span>Выручка</span><strong>{{ revenue|money }} ₸</strong><small>без отменённых заказов</small></div>
+    <div class="stat"><span>Продано единиц</span><strong>{{ units }}</strong><small>в {{ orders_count }} заказах</small></div>
+    <div class="stat"><span>Товаров в каталоге</span><strong>{{ active }}</strong><small>{{ hidden }} скрыто</small></div>
+</div>
+
+<div class="panel-grid">
+    <div class="card">
+        <h2>Последние заказы</h2>
+        {% if recent %}
+        <table class="table">
+            <thead><tr><th>Заказ</th><th>Товар</th><th>Кол-во</th><th>Статус</th></tr></thead>
+            <tbody>
+            {% for order_id, date, status, title, qty, price in recent %}
+            <tr>
+                <td>№{{ order_id }}<small class="muted">{{ date.strftime('%d.%m.%Y') }}</small></td>
+                <td>{{ title }}</td>
+                <td>{{ qty }}</td>
+                <td>{{ status_badge(status) }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p class="card-link"><a href="{{ url_for('seller.orders') }}">Все заказы →</a></p>
+        {% else %}
+        <p class="muted-block">Заказов пока нет. Они появятся, когда покупатели начнут заказывать ваши товары.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Заканчиваются на складе</h2>
+        {% if low_stock %}
+        <ul class="plain-list">
+            {% for product_id, title, qty in low_stock %}
+            <li>
+                <a href="{{ url_for('seller.product_edit', product_id=product_id) }}">{{ title }}</a>
+                <span class="pill {{ 'pill-red' if qty == 0 else 'pill-amber' }}">{{ qty }} шт.</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted-block">Все товары в достаточном количестве 👍</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

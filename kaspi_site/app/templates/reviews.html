@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% from "_macros.html" import product_grid %}
+{% block title %}Отзывы - {{ product.title }}{% endblock %}
+{% block container_class %}container-narrow{% endblock %}
+
+{% block content %}
+<p class="back-link"><a href="{{ url_for('catalog.home') }}">← В каталог</a></p>
+
+<div class="page-title">
+    <h1>Отзывы: {{ product.title }}</h1>
+    <p>
+        {{ product.price|money }} ₸ · Продавец: {{ product.seller }}
+        {% if average %} · Средняя оценка: <b>{{ average }}</b> ⭐ ({{ reviews|length }}){% endif %}
+    </p>
+</div>
+
+<div class="reviews">
+    {% for review in reviews %}
+    <div class="review-card">
+        <div class="review-top">
+            <strong>{{ review.full_name }}</strong>
+            <span class="rating">{{ "⭐" * review.rating }}</span>
+        </div>
+        <p class="review-text">{{ review.comment }}</p>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>Пока нет отзывов</h2>
+        <p>Будьте первым, кто оставит отзыв.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if similar %}
+<section class="recs">
+    <h2>Похожие товары</h2>
+    {{ product_grid(similar) }}
+</section>
+{% endif %}
+
+{% if user %}
+<div class="review-form">
+    <h2>Оставить отзыв</h2>
+
+    <form action="{{ url_for('reviews.add', product_id=product_id) }}" method="POST">
+        {{ csrf_field() }}
+        <label for="rating">Оценка</label>
+        <select id="rating" name="rating" required>
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+        </select>
+
+        <label for="comment">Комментарий</label>
+        <textarea id="comment" name="comment" maxlength="1000" placeholder="Напишите свой отзыв..." required></textarea>
+
+        <button class="btn" type="submit">Отправить отзыв</button>
+    </form>
+</div>
+{% else %}
+<div class="review-login">
+    <p>Чтобы оставить отзыв, нужно войти в аккаунт.</p>
+    <a href="{{ url_for('account.login', next=request.path) }}" class="btn">Войти</a>
+</div>
+{% endif %}
+{% endblock %}

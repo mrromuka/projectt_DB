@@ -1,0 +1,46 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Категории - Админ-панель{% endblock %}
+
+{% macro category_row(c, level) %}
+<li class="cat-row cat-level-{{ level }}">
+    <form class="cat-rename" action="{{ url_for('admin.category_rename', category_id=c.id) }}" method="POST">
+        {{ csrf_field() }}
+        <span class="cat-icon">{{ '📂' if level == 0 else '🏷️' }}</span>
+        <input type="text" name="name" value="{{ c.name }}" required maxlength="255" aria-label="Название">
+        <button type="submit" class="btn btn-sm btn-light">Переименовать</button>
+    </form>
+    <span class="muted">{{ c.products }} товаров</span>
+    {% if c.products == 0 and c.children == 0 %}
+    <form action="{{ url_for('admin.category_delete', category_id=c.id) }}" method="POST"
+          onsubmit="return confirm('Удалить категорию?')">
+        {{ csrf_field() }}<button type="submit" class="btn btn-sm btn-ghost-danger">Удалить</button>
+    </form>
+    {% else %}<span></span>{% endif %}
+</li>
+{% for s in c.subs %}{{ category_row(s, level + 1) }}{% endfor %}
+{% endmacro %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Категории</h1><p>Структура каталога: категории и подкатегории</p></div></div>
+
+<div class="card form-card">
+    <h2>Новая категория</h2>
+    <form class="toolbar toolbar-flat" action="{{ url_for('admin.category_add') }}" method="POST">
+        {{ csrf_field() }}
+        <input type="text" name="name" required maxlength="255" placeholder="Название">
+        <select name="parent_id" aria-label="Родительская категория">
+            <option value="">Основная категория</option>
+            {% for r in roots %}<option value="{{ r.id }}">Подкатегория в «{{ r.name }}»</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn">Добавить</button>
+    </form>
+</div>
+
+<div class="card card-flush">
+    <ul class="cat-list">
+    {% for c in roots %}{{ category_row(c, 0) }}{% else %}
+        <li class="muted-block">Категорий пока нет.</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}

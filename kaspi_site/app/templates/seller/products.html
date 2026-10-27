@@ -1,0 +1,48 @@
+{% extends "seller/_layout.html" %}
+{% from "_macros.html" import empty_state %}
+{% block title %}Мои товары - Кабинет продавца{% endblock %}
+
+{% block panel %}
+<div class="panel-title">
+    <div><h1>Мои товары</h1><p>Добавляйте товары, меняйте цены и остатки</p></div>
+    <a href="{{ url_for('seller.product_new') }}" class="btn">+ Добавить товар</a>
+</div>
+
+<form class="toolbar" method="GET">
+    <input type="text" name="q" value="{{ q }}" placeholder="Поиск по названию…">
+    <button type="submit" class="btn">Найти</button>
+    {% if q %}<a href="{{ url_for('seller.products') }}" class="btn btn-light">Сбросить</a>{% endif %}
+</form>
+
+{% if products %}
+<div class="card card-flush table-wrap">
+<table class="table">
+    <thead><tr><th>Товар</th><th>Категория</th><th class="num">Цена</th><th class="num">Остаток</th><th>Статус</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+    <tr class="{{ 'row-muted' if not p.is_active }}">
+        <td><strong>{{ p.title }}</strong></td>
+        <td>{{ p.category }}</td>
+        <td class="num">{{ p.price|money }} ₸</td>
+        <td class="num">
+            <span class="{{ 'text-red' if p.stock_qty == 0 else ('text-amber' if p.stock_qty <= low_stock) }}">{{ p.stock_qty }}</span>
+        </td>
+        <td>{% if p.is_active %}<span class="pill pill-green">В каталоге</span>{% else %}<span class="pill">Скрыт</span>{% endif %}</td>
+        <td class="actions">
+            <a href="{{ url_for('seller.product_edit', product_id=p.id) }}" class="btn btn-sm btn-light">Изменить</a>
+            <form action="{{ url_for('seller.product_toggle', product_id=p.id) }}" method="POST">
+                {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+                <button type="submit" class="btn btn-sm btn-light">{{ 'Скрыть' if p.is_active else 'Показать' }}</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% elif q %}
+    {{ empty_state('🔍', 'Ничего не найдено', 'Измените запрос.') }}
+{% else %}
+    {{ empty_state('🛍️', 'У вас пока нет товаров', 'Добавьте первый товар — он сразу появится в каталоге.', url_for('seller.product_new'), 'Добавить товар') }}
+{% endif %}
+{% endblock %}

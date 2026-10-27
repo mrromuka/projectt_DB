@@ -1,0 +1,68 @@
+{% from "_macros.html" import product_grid -%}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kaspi Магазин{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+    <a class="logo" href="{{ url_for('catalog.home') }}">Kaspi Магазин</a>
+
+    <nav class="nav">
+        <a href="{{ url_for('catalog.home') }}" class="{{ 'active' if request.endpoint == 'catalog.home' }}">Каталог</a>
+
+        {% if user %}
+            {% if user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.blueprint == 'admin' }}">⚙️ Админ-панель</a>
+            {% elif user.is_seller %}
+                <a href="{{ url_for('seller.dashboard') }}" class="{{ 'active' if request.blueprint == 'seller' }}">🏪 Кабинет продавца</a>
+            {% endif %}
+
+            {% if not user.is_admin %}
+                <a href="{{ url_for('cart.show') }}" class="{{ 'active' if request.blueprint == 'cart' }}">
+                    🛒 Корзина{% if cart_count %}<span class="nav-badge">{{ cart_count }}</span>{% endif %}
+                </a>
+                <a href="{{ url_for('orders.history') }}" class="{{ 'active' if request.blueprint == 'orders' }}">📦 Заказы</a>
+            {% endif %}
+
+            <div class="user-chip">
+                <span class="user-chip-name" title="{{ user.email }}">👤 {{ user.full_name.split()[0] }}</span>
+                <form action="{{ url_for('account.logout') }}" method="POST">
+                    {{ csrf_field() }}
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        {% else %}
+            <a href="{{ url_for('account.login') }}">Войти</a>
+            <a href="{{ url_for('account.register') }}" class="nav-cta">Регистрация</a>
+        {% endif %}
+    </nav>
+</header>
+
+<main class="container {% block container_class %}{% endblock %}">
+    {% include "_flash.html" %}
+    {% if added_recs %}
+    <section class="recs recs-panel">
+        <h2>Вы добавили «{{ just_added.title }}» — вам может понравиться</h2>
+        {{ product_grid(added_recs) }}
+    </section>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p>Kaspi Магазин © 2026</p>
+</footer>
+
+<script>
+    // Сообщения исчезают сами через 6 секунд
+    document.querySelectorAll('.flash').forEach(function (el) {
+        setTimeout(function () { el.classList.add('flash-hide'); }, 6000);
+    });
+</script>
+</body>
+</html>

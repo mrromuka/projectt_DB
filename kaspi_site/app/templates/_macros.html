@@ -1,0 +1,79 @@
+{% macro product_grid(products) %}
+<div class="products">
+    {% for p in products %}
+    <div class="product">
+        <div class="product-image">🛍️</div>
+
+        <div class="product-info">
+            <h3>{{ p.title }}</h3>
+            {% if p.reason %}<div class="product-reason">💡 {{ p.reason }}</div>{% endif %}
+            <div class="product-seller">Продавец: {{ p.seller }}</div>
+            <div class="product-price">{{ p.price|money }} ₸</div>
+
+            <div class="stock {{ 'stock-low' if 0 < p.stock_qty <= 5 else ('stock-out' if p.stock_qty <= 0) }}">
+                {% if p.stock_qty > 5 %}
+                    ✓ В наличии
+                {% elif p.stock_qty > 0 %}
+                    ⚠ Осталось {{ p.stock_qty }} шт.
+                {% else %}
+                    ✕ Нет в наличии
+                {% endif %}
+            </div>
+
+            <div class="product-actions">
+                {% if p.stock_qty > 0 %}
+                    <form action="{{ url_for('cart.add_item', product_id=p.id) }}" method="POST">
+                        {{ csrf_field() }}
+                        <button type="submit" class="btn">В корзину</button>
+                    </form>
+                {% else %}
+                    <button class="btn disabled" disabled>Нет в наличии</button>
+                {% endif %}
+
+                <a href="{{ url_for('reviews.show', product_id=p.id) }}" class="btn btn-light">⭐ Отзывы</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro status_badge(status) %}
+<span class="status-badge status-{{ status }}">{{ status|status_label }}</span>
+{% endmacro %}
+
+
+{% macro pager(pager) %}
+{% if pager.pages > 1 %}
+{% set args = request.args.to_dict() %}
+<nav class="pager">
+    {% if pager.page > 1 %}
+        <a href="{{ url_for(request.endpoint, **(args | dict_merge({'page': pager.page - 1}))) }}">← Назад</a>
+    {% endif %}
+    <span>Страница {{ pager.page }} из {{ pager.pages }} · всего {{ pager.total }}</span>
+    {% if pager.page < pager.pages %}
+        <a href="{{ url_for(request.endpoint, **(args | dict_merge({'page': pager.page + 1}))) }}">Вперёд →</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+
+{# Ссылка бокового меню кабинета #}
+{% macro side_link(endpoint, icon, label, prefix=None) %}
+{% set is_active = request.endpoint == endpoint or (prefix and request.endpoint and request.endpoint.startswith(prefix)) %}
+<a href="{{ url_for(endpoint) }}" class="side-link {{ 'active' if is_active }}">
+    <span class="side-icon">{{ icon }}</span>{{ label }}
+</a>
+{% endmacro %}
+
+
+{% macro empty_state(icon, title, text, link=None, link_text=None) %}
+<div class="empty-state">
+    <div class="empty-state-icon">{{ icon }}</div>
+    <h2>{{ title }}</h2>
+    <p>{{ text }}</p>
+    {% if link %}<a href="{{ link }}" class="btn">{{ link_text }}</a>{% endif %}
+</div>
+{% endmacro %}

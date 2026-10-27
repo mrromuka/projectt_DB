@@ -1,0 +1,56 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Заказ №{{ order[0] }} - Админ-панель{% endblock %}
+
+{% block panel %}
+<p class="back-link"><a href="{{ url_for('admin.orders') }}">← Все заказы</a></p>
+<div class="panel-title">
+    <div><h1>Заказ №{{ order[0] }}</h1><p>от {{ order[1].strftime('%d.%m.%Y') }}</p></div>
+    {{ status_badge(order[2]) }}
+</div>
+
+<div class="panel-grid">
+    <div class="card">
+        <h2>Покупатель</h2>
+        <dl class="details">
+            <dt>Имя</dt><dd>{{ order[4] }}</dd>
+            <dt>Email</dt><dd>{{ order[5] }}</dd>
+            <dt>Телефон</dt><dd>{{ order[6] or '—' }}</dd>
+        </dl>
+    </div>
+
+    <div class="card">
+        <h2>Статус заказа</h2>
+        {% if order[2] == 'cancelled' %}
+            <p class="muted-block">Заказ отменён, товары возвращены на склад. Вернуть его в работу нельзя.</p>
+        {% else %}
+        <form action="{{ url_for('admin.order_status', order_id=order[0]) }}" method="POST" class="status-steps">
+            {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.path }}">
+            {% for value, label in ORDER_STATUSES %}
+            <button type="submit" name="status" value="{{ value }}"
+                    class="step {{ 'current' if value == order[2] }} {{ 'step-danger' if value == 'cancelled' }}"
+                    {% if value == 'cancelled' %}onclick="return confirm('Отменить заказ? Товары вернутся на склад.')"{% endif %}>
+                {{ label }}
+            </button>
+            {% endfor %}
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card card-flush table-wrap">
+<table class="table">
+    <thead><tr><th>Товар</th><th>Продавец</th><th class="num">Цена</th><th class="num">Кол-во</th><th class="num">Сумма</th></tr></thead>
+    <tbody>
+    {% for product_id, title, seller, qty, price in items %}
+    <tr>
+        <td><strong>{{ title }}</strong></td><td>{{ seller }}</td>
+        <td class="num">{{ price|money }} ₸</td><td class="num">{{ qty }}</td>
+        <td class="num">{{ (price * qty)|money }} ₸</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="4" class="num">Итого</td><td class="num"><strong>{{ total|money }} ₸</strong></td></tr></tfoot>
+</table>
+</div>
+{% endblock %}

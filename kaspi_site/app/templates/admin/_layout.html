@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import side_link %}
+
+{% block container_class %}container-wide{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <aside class="sidebar">
+        <div class="sidebar-head">
+            <span class="sidebar-kicker">Администратор</span>
+            <strong>{{ user.full_name }}</strong>
+        </div>
+        {{ side_link('admin.dashboard', '📊', 'Обзор') }}
+        {{ side_link('admin.orders', '📦', 'Заказы', 'admin.order') }}
+        {{ side_link('admin.products', '🛍️', 'Товары', 'admin.product') }}
+        {{ side_link('admin.users', '👥', 'Пользователи', 'admin.user') }}
+        {{ side_link('admin.categories', '🗂️', 'Категории', 'admin.categor') }}
+        {{ side_link('admin.reviews', '💬', 'Отзывы', 'admin.review') }}
+        <a href="{{ url_for('catalog.home') }}" class="side-link side-link-muted"><span class="side-icon">↗</span>Открыть магазин</a>
+    </aside>
+
+    <section class="panel-main">
+        {% block panel %}{% endblock %}
+    </section>
+</div>
+{% endblock %}

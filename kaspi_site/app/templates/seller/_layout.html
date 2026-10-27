@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import side_link %}
+
+{% block container_class %}container-wide{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <aside class="sidebar">
+        <div class="sidebar-head">
+            <span class="sidebar-kicker">Кабинет продавца</span>
+            <strong>{{ user.company_name }}</strong>
+        </div>
+        {{ side_link('seller.dashboard', '📊', 'Обзор') }}
+        {{ side_link('seller.products', '🛍️', 'Мои товары', 'seller.product') }}
+        {{ side_link('seller.orders', '📦', 'Заказы') }}
+        <a href="{{ url_for('catalog.home') }}" class="side-link side-link-muted"><span class="side-icon">↗</span>Открыть магазин</a>
+    </aside>
+
+    <section class="panel-main">
+        {% block panel %}{% endblock %}
+    </section>
+</div>
+{% endblock %}

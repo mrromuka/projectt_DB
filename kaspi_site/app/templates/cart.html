@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import empty_state, product_grid %}
+
+{% block title %}Корзина - Kaspi{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <h1>🛒 Ваша корзина</h1>
+    <p>Проверьте товары перед оформлением заказа</p>
+</div>
+
+{% if cart_items %}
+<div class="cart">
+    {% for item in cart_items %}
+    <div class="cart-item {{ 'cart-item-bad' if not item.available }}">
+        <div class="cart-product-image">🛍️</div>
+
+        <div class="cart-info">
+            <h3>{{ item.title }}</h3>
+            <div class="product-seller">Продавец: {{ item.seller }}</div>
+            <div class="cart-price">{{ item.price|money }} ₸</div>
+            {% if not item.available %}
+                <div class="cart-warning">
+                    {% if item.stock <= 0 %}Товара нет в наличии{% else %}В наличии только {{ item.stock }} шт.{% endif %}
+                    — уменьшите количество или удалите товар
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="cart-quantity">
+            <span>Количество</span>
+            <div class="qty">
+                <form action="{{ url_for('cart.update_item', product_id=item.product_id) }}" method="POST">
+                    {{ csrf_field() }}<input type="hidden" name="action" value="dec">
+                    <button type="submit" aria-label="Меньше">−</button>
+                </form>
+                <strong>{{ item.quantity }}</strong>
+                <form action="{{ url_for('cart.update_item', product_id=item.product_id) }}" method="POST">
+                    {{ csrf_field() }}<input type="hidden" name="action" value="inc">
+                    <button type="submit" aria-label="Больше">+</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="cart-subtotal">
+            <span>Сумма</span>
+            <strong>{{ item.subtotal|money }} ₸</strong>
+        </div>
+
+        <form action="{{ url_for('cart.update_item', product_id=item.product_id) }}" method="POST">
+            {{ csrf_field() }}<input type="hidden" name="action" value="remove">
+            <button type="submit" class="icon-btn" title="Убрать из корзины" aria-label="Убрать">🗑️</button>
+        </form>
+    </div>
+    {% endfor %}
+
+    <div class="cart-bottom">
+        <div class="total">
+            <span>Итого к оплате:</span>
+            <strong>{{ total_price|money }} ₸</strong>
+        </div>
+
+        <form action="{{ url_for('orders.checkout') }}" method="POST">
+            {{ csrf_field() }}
+            <button type="submit" class="checkout-btn" {{ 'disabled' if not can_checkout }}>Оформить заказ</button>
+        </form>
+    </div>
+</div>
+{% else %}
+    {{ empty_state('🛒', 'Корзина пуста', 'Вы ещё не добавили товары в корзину.', url_for('catalog.home'), 'Перейти к покупкам') }}
+{% endif %}
+
+{% if recommendations %}
+<section class="recs">
+    <h2>{{ 'С этим часто покупают' if cart_items else 'Вам может понравиться' }}</h2>
+    {{ product_grid(recommendations) }}
+</section>
+{% endif %}
+{% endblock %}

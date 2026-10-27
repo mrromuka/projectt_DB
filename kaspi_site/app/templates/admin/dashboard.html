@@ -1,0 +1,49 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Обзор - Админ-панель{% endblock %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Обзор</h1><p>Что происходит в магазине</p></div></div>
+
+<div class="stats stats-4">
+    <div class="stat"><span>Заказов всего</span><strong>{{ orders_total }}</strong><small>{{ by_status.get('new', 0) }} новых ждут обработки</small></div>
+    <div class="stat"><span>Выручка</span><strong>{{ revenue|money }} ₸</strong><small>без отменённых</small></div>
+    <div class="stat"><span>Покупателей</span><strong>{{ buyers }}</strong><small>{{ sellers }} продавцов</small></div>
+    <div class="stat"><span>Товаров в каталоге</span><strong>{{ products }}</strong><small>активных</small></div>
+</div>
+
+<div class="panel-grid">
+    <div class="card">
+        <h2>Заказы по статусам</h2>
+        <ul class="plain-list">
+            {% for value, label in ORDER_STATUSES %}
+            <li>
+                <a href="{{ url_for('admin.orders', status=value) }}">{{ status_badge(value) }}</a>
+                <strong>{{ by_status.get(value, 0) }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Последние заказы</h2>
+        {% if recent %}
+        <table class="table">
+            <tbody>
+            {% for order_id, date, status, buyer, total in recent %}
+            <tr>
+                <td><a href="{{ url_for('admin.order_detail', order_id=order_id) }}"><strong>№{{ order_id }}</strong></a>
+                    <small class="muted">{{ buyer }}</small></td>
+                <td class="num">{{ total|money }} ₸</td>
+                <td>{{ status_badge(status) }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p class="card-link"><a href="{{ url_for('admin.orders') }}">Все заказы →</a></p>
+        {% else %}
+        <p class="muted-block">Заказов пока нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

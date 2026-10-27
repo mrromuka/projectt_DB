@@ -1,0 +1,29 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import pager as render_pager, empty_state %}
+{% block title %}Отзывы - Админ-панель{% endblock %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Отзывы</h1><p>Удаляйте спам и оскорбления</p></div></div>
+
+{% if rows %}
+<div class="reviews">
+    {% for rid, author, pid, title, rating, comment in rows %}
+    <div class="review-card">
+        <div class="review-top">
+            <div><strong>{{ author }}</strong> о товаре <a href="{{ url_for('reviews.show', product_id=pid) }}" class="link-red">{{ title }}</a></div>
+            <span class="rating">{{ "⭐" * rating }}</span>
+        </div>
+        <p class="review-text">{{ comment }}</p>
+        <form action="{{ url_for('admin.review_delete', review_id=rid) }}" method="POST"
+              onsubmit="return confirm('Удалить отзыв?')" class="review-actions">
+            {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="btn btn-sm btn-ghost-danger">Удалить отзыв</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{{ render_pager(pager) }}
+{% else %}
+    {{ empty_state('💬', 'Отзывов пока нет', 'Когда покупатели оставят отзывы, они появятся здесь.') }}
+{% endif %}
+{% endblock %}

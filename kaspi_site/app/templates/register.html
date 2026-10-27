@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - Kaspi{% endblock %}
+
+{% block content %}
+<div class="register-page">
+    <div class="register-card">
+        <div class="register-icon">👤</div>
+
+        <h1>Регистрация</h1>
+        <p class="register-subtitle">Создайте аккаунт, чтобы покупать или продавать</p>
+
+        <form action="{{ url_for('account.register') }}" method="POST" id="register-form">
+            {{ csrf_field() }}
+
+            <div class="role-switch">
+                <label class="role-option">
+                    <input type="radio" name="role" value="buyer" {{ 'checked' if form.role != 'seller' }}>
+                    <span><b>🛍️ Покупатель</b><small>Хочу покупать товары</small></span>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="seller" {{ 'checked' if form.role == 'seller' }}>
+                    <span><b>🏪 Продавец</b><small>Хочу продавать свои товары</small></span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="full_name">ФИО</label>
+                <input type="text" id="full_name" name="full_name" required
+                       value="{{ form.full_name or '' }}" placeholder="Оразбек Мухамеджан">
+            </div>
+
+            <div class="form-group" id="company-group">
+                <label for="company_name">Название магазина / компании</label>
+                <input type="text" id="company_name" name="company_name"
+                       value="{{ form.company_name or '' }}" placeholder="ТОО «Ромашка»">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required
+                       value="{{ form.email or '' }}" placeholder="example@mail.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Телефон</label>
+                <input type="text" id="phone" name="phone" required
+                       value="{{ form.phone or '' }}" placeholder="+7 (700) 000-00-00">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required minlength="6"
+                           placeholder="Минимум 6 символов" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="password2">Повторите пароль</label>
+                    <input type="password" id="password2" name="password2" required minlength="6"
+                           autocomplete="new-password">
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn">Создать аккаунт</button>
+        </form>
+
+        <div class="register-footer">
+            Уже есть аккаунт? <a href="{{ url_for('account.login') }}">Войти</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var form = document.getElementById('register-form');
+        var group = document.getElementById('company-group');
+        var company = document.getElementById('company_name');
+        function sync() {
+            var seller = form.elements['role'].value === 'seller';
+            group.style.display = seller ? '' : 'none';
+            company.required = seller;
+        }
+        form.addEventListener('change', sync);
+        sync();
+    })();
+</script>
+{% endblock %}

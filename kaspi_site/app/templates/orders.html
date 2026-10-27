@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, empty_state, product_grid %}
+
+{% block title %}Мои заказы - Kaspi{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <h1>📦 История заказов</h1>
+    <p>Здесь отображаются все ваши оформленные заказы</p>
+</div>
+
+{% if orders %}
+<div class="orders">
+    {% for ord in orders %}
+    <div class="order-card">
+        <div class="order-top">
+            <div>
+                <span class="order-label">Заказ от {{ ord.date.strftime('%d.%m.%Y') }}</span>
+                <h2>№{{ ord.order_id }}</h2>
+            </div>
+            {{ status_badge(ord.status) }}
+        </div>
+
+        <table class="items-table">
+            {% for item in ord.lines %}
+            <tr>
+                <td class="items-title"><a href="{{ url_for('reviews.show', product_id=item.product_id) }}">{{ item.title }}</a></td>
+                <td class="items-qty">{{ item.quantity }} × {{ item.price|money }} ₸</td>
+                <td class="items-sum">{{ (item.price * item.quantity)|money }} ₸</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="order-bottom">
+            <div class="order-total">Итого: <strong class="order-price">{{ ord.total|money }} ₸</strong></div>
+            {% if ord.status == 'new' %}
+            <form action="{{ url_for('orders.cancel', order_id=ord.order_id) }}" method="POST"
+                  onsubmit="return confirm('Отменить заказ №{{ ord.order_id }}?')">
+                {{ csrf_field() }}
+                <button type="submit" class="btn btn-ghost-danger">Отменить заказ</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+    {{ empty_state('📦', 'Заказов пока нет', 'Вы ещё не оформляли покупки.', url_for('catalog.home'), 'Перейти в магазин') }}
+{% endif %}
+
+{% if recommendations %}
+<section class="recs">
+    <h2>Вам может понравиться</h2>
+    {{ product_grid(recommendations) }}
+</section>
+{% endif %}
+{% endblock %}

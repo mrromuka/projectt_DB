@@ -1,0 +1,59 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import status_badge, pager as render_pager, empty_state %}
+{% block title %}Заказы - Админ-панель{% endblock %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Заказы</h1><p>Меняйте статусы — покупатель увидит их у себя в «Заказах»</p></div></div>
+
+<div class="tabs">
+    <a href="{{ url_for('admin.orders', q=q or None) }}" class="tab {{ 'active' if not status }}">Все <span>{{ total_all }}</span></a>
+    {% for value, label in ORDER_STATUSES %}
+    <a href="{{ url_for('admin.orders', status=value, q=q or None) }}" class="tab {{ 'active' if status == value }}">{{ label }} <span>{{ counts.get(value, 0) }}</span></a>
+    {% endfor %}
+</div>
+
+<form class="toolbar" method="GET">
+    {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+    <input type="text" name="q" value="{{ q }}" placeholder="№ заказа, имя или email покупателя…">
+    <button type="submit" class="btn">Найти</button>
+</form>
+
+{% if rows %}
+<div class="card card-flush table-wrap">
+<table class="table">
+    <thead><tr><th>Заказ</th><th>Покупатель</th><th class="num">Товаров</th><th class="num">Сумма</th><th>Статус</th><th>Изменить статус</th></tr></thead>
+    <tbody>
+    {% for order_id, date, st, name, email, qty, total in rows %}
+    <tr>
+        <td><a href="{{ url_for('admin.order_detail', order_id=order_id) }}"><strong>№{{ order_id }}</strong></a>
+            <small class="muted">{{ date.strftime('%d.%m.%Y') }}</small></td>
+        <td>{{ name }}<small class="muted">{{ email }}</small></td>
+        <td class="num">{{ qty }}</td>
+        <td class="num">{{ total|money }} ₸</td>
+        <td>{{ status_badge(st) }}</td>
+        <td>
+            {% if st == 'cancelled' %}
+                <span class="muted">—</span>
+            {% else %}
+            <form class="inline-form" action="{{ url_for('admin.order_status', order_id=order_id) }}" method="POST">
+                {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+                <select name="status" aria-label="Статус заказа №{{ order_id }}">
+                    {% for value, label in ORDER_STATUSES %}
+                    <option value="{{ value }}" {{ 'selected' if value == st }}>{{ label }}</option>
+                    {% endfor %}
+                    {% if st not in ORDER_STATUSES|map(attribute=0) %}<option value="{{ st }}" selected disabled>{{ st }}</option>{% endif %}
+                </select>
+                <button type="submit" class="btn btn-sm">OK</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{{ render_pager(pager) }}
+{% else %}
+    {{ empty_state('📦', 'Заказов не найдено', 'Измените фильтр или поисковый запрос.') }}
+{% endif %}
+{% endblock %}

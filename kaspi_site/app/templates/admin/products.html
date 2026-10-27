@@ -1,0 +1,43 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import pager as render_pager, empty_state %}
+{% block title %}Товары - Админ-панель{% endblock %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Товары</h1><p>Скрывайте товары, которые нарушают правила магазина</p></div></div>
+
+<form class="toolbar" method="GET">
+    <input type="text" name="q" value="{{ q }}" placeholder="Название товара или продавец…">
+    <select name="state">
+        <option value="">Все</option>
+        <option value="active" {{ 'selected' if state == 'active' }}>В каталоге</option>
+        <option value="hidden" {{ 'selected' if state == 'hidden' }}>Скрытые</option>
+    </select>
+    <button type="submit" class="btn">Найти</button>
+</form>
+
+{% if rows %}
+<div class="card card-flush table-wrap">
+<table class="table">
+    <thead><tr><th>Товар</th><th>Продавец</th><th>Категория</th><th class="num">Цена</th><th class="num">Остаток</th><th>Статус</th><th></th></tr></thead>
+    <tbody>
+    {% for pid, title, seller, cat, price, stock, active in rows %}
+    <tr class="{{ 'row-muted' if not active }}">
+        <td><strong>{{ title }}</strong></td><td>{{ seller }}</td><td>{{ cat }}</td>
+        <td class="num">{{ price|money }} ₸</td><td class="num">{{ stock }}</td>
+        <td>{% if active %}<span class="pill pill-green">В каталоге</span>{% else %}<span class="pill">Скрыт</span>{% endif %}</td>
+        <td class="actions">
+            <form action="{{ url_for('admin.product_toggle', product_id=pid) }}" method="POST">
+                {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+                <button type="submit" class="btn btn-sm btn-light">{{ 'Скрыть' if active else 'Показать' }}</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{{ render_pager(pager) }}
+{% else %}
+    {{ empty_state('🛍️', 'Товаров не найдено', 'Измените фильтр или поисковый запрос.') }}
+{% endif %}
+{% endblock %}

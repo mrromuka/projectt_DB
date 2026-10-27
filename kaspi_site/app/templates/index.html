@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import product_grid, empty_state %}
+
+{% block content %}
+<section class="welcome">
+    <div>
+        <h1>Добро пожаловать в Kaspi Магазин</h1>
+        <p>Покупайте товары удобно и быстро</p>
+        {% if not user %}
+        <div class="welcome-actions">
+            <a href="{{ url_for('account.register') }}" class="btn">Создать аккаунт</a>
+            <a href="{{ url_for('account.register', role='seller') }}" class="btn btn-light">Стать продавцом</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="welcome-icon">🛍️</div>
+</section>
+
+<form class="search" action="{{ url_for('catalog.home') }}" method="GET">
+    <input type="text" name="search" value="{{ search }}" placeholder="Поиск товаров...">
+    <button type="submit">Поиск</button>
+</form>
+
+{% if search %}
+<p class="search-result">
+    {% if found %}Найдено товаров: <b>{{ found }}</b> по запросу «{{ search }}»
+    {% else %}По запросу «{{ search }}» ничего не найдено{% endif %}
+    · <a href="{{ url_for('catalog.home') }}">сбросить поиск</a>
+</p>
+{% endif %}
+
+{% for cat in root_categories %}
+<section class="category-section">
+    <div class="category-title">
+        <span>📂</span>
+        <h2>{{ cat.name }}</h2>
+    </div>
+
+    {% if cat.products %}
+        {{ product_grid(cat.products) }}
+    {% endif %}
+
+    {% for sub in cat.subcategories %}
+    <div class="subcategory-box">
+        <div class="subcategory-title">
+            <span>🏷️</span>
+            <h3>{{ sub.name }}</h3>
+        </div>
+
+        {% if sub.products %}
+            {{ product_grid(sub.products) }}
+        {% else %}
+            <div class="empty-note">В этой подкатегории пока нет товаров</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% if not cat.products and not cat.subcategories %}
+        <div class="empty-note">В этой категории пока ничего нет.</div>
+    {% endif %}
+</section>
+{% else %}
+    {% if search %}
+        {{ empty_state('🔍', 'Ничего не найдено', 'Попробуйте изменить запрос.') }}
+    {% else %}
+        {{ empty_state('🛍️', 'Каталог пока пуст', 'Товары появятся, как только продавцы их добавят.') }}
+    {% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "admin/_layout.html" %}
+{% from "_macros.html" import pager as render_pager, empty_state %}
+{% block title %}Пользователи - Админ-панель{% endblock %}
+
+{% block panel %}
+<div class="panel-title"><div><h1>Пользователи</h1><p>Роли, блокировка и продавцы</p></div></div>
+
+<form class="toolbar" method="GET">
+    <input type="text" name="q" value="{{ q }}" placeholder="Имя, email или название магазина…">
+    <select name="role">
+        <option value="">Все роли</option>
+        {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if role == value }}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn">Найти</button>
+</form>
+
+{% if rows %}
+<div class="card card-flush table-wrap">
+<table class="table">
+    <thead><tr><th>Пользователь</th><th>Телефон</th><th>Роль</th><th>Статус</th><th></th></tr></thead>
+    <tbody>
+    {% for uid, name, email, phone, urole, active, company in rows %}
+    <tr class="{{ 'row-muted' if not active }}">
+        <td><strong>{{ name }}</strong>{% if uid == user.id %} <span class="pill">это вы</span>{% endif %}
+            <small class="muted">{{ email }}{% if company %} · 🏪 {{ company }}{% endif %}</small></td>
+        <td>{{ phone or '—' }}</td>
+        <td>
+            {% if uid == user.id %}{{ urole|role_label }}
+            {% else %}
+            <form class="inline-form" action="{{ url_for('admin.user_role', user_id=uid) }}" method="POST">
+                {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+                <select name="role" aria-label="Роль">
+                    {% for value, label in roles %}<option value="{{ value }}" {{ 'selected' if value == urole }}>{{ label }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-light">Сохранить</button>
+            </form>
+            {% endif %}
+        </td>
+        <td>{% if active %}<span class="pill pill-green">Активен</span>{% else %}<span class="pill pill-red">Заблокирован</span>{% endif %}</td>
+        <td class="actions">
+            {% if uid != user.id %}
+            <form action="{{ url_for('admin.user_toggle', user_id=uid) }}" method="POST"
+                  {% if active %}onsubmit="return confirm('Заблокировать {{ name|e }}? Его товары будут скрыты из каталога.')"{% endif %}>
+                {{ csrf_field() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+                <button type="submit" class="btn btn-sm {{ 'btn-ghost-danger' if active else 'btn-light' }}">{{ 'Заблокировать' if active else 'Разблокировать' }}</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{{ render_pager(pager) }}
+{% else %}
+    {{ empty_state('👥', 'Никого не найдено', 'Измените фильтр или поисковый запрос.') }}
+{% endif %}
+{% endblock %}
